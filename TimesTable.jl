@@ -12,7 +12,7 @@ end
 
 Base.show(io::IO, q::Question) = print(io, q.text, " = ")
 
-function practice(factors, n=10; show_answers=true, bank_threshold=5)
+function practice(factors, n=10; show_answers=false, bank_threshold=5)
     # ALL times table combinations
     combo_pool = [(f, c) for f in factors for c in 1:12] |> shuffle
     
@@ -48,14 +48,18 @@ function practice(factors, n=10; show_answers=true, bank_threshold=5)
     
     # Print questions to stdout
     println("Generating $n times-table and division questions; factors $(join(factors, ", ")).\n")
-    for (i, q) in enumerate(output_questions)
-        println("Q$i: $q")
-    end
-
+    
     if show_answers
+        for (i, q) in enumerate(output_questions)
+            println("Q$i: $q")
+        end
         println()
         for (i, q) in enumerate(output_questions)
             println("A$i: $(q.answer)")
+        end
+    else 
+        for q in output_questions
+            println(q)
         end
     end
 end
