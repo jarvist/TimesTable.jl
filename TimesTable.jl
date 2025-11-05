@@ -43,6 +43,8 @@ function practice(factors, n=10; show_answers=false, bank_threshold=5)
         if !isempty(question_bank)
             push!(output_questions, pop!(question_bank))
             # FIXME: doesn't currently check for duplication
+        else # if no questions left... we've finished all possibilities, so let's start again
+            combo_pool = [(f, c) for f in factors for c in 1:12] |> shuffle
         end
     end
     
@@ -66,7 +68,7 @@ end
 
 # Example usage
 function main()
-    practice([2, 10], 20)
+    practice([2, 10], 200)
 #    practice([3, 4], 6)
 #    practice([7, 8, 9], 8)
 end
