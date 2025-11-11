@@ -1,77 +1,77 @@
-# TimeTable.jl
-# generates a set of randomised times-table questions of given factors (f), but
-# stochastically includes the commutative pair (i.e. c × f = f × c) and the 'division fact'
-# (c × f = a, then ask a ÷ f) in the next few questions.
+# TimesTable.jl
+# Generates a set of randomised arithmetic questions for any operation (+, -, ×, ÷).
+# Stochastically includes commutative pairs (e.g., a × b = b × a) and inverse operations
+# (e.g., a × b = c, then ask c ÷ a) in the next few questions.
 
 using Random
 
+# Unicode operator display and inverse operation mappings
+const UNICODE_OPS = Dict{Symbol, String}(:+ => "+", :- => "−", :* => "×", :÷ => "÷")
+const INVERSE_OPS = Dict{Symbol, Symbol}(:+ => :-, :- => :+, :* => :÷, :÷ => :*)
+
+expr_to_unicode(ex::Expr) = let (op, args...) = ex.args; join(args, " $(get(UNICODE_OPS, op, string(op))) ") end
+
 @kwdef struct Question
-    text::String
-    answer::Int
+    expr::Expr
+    answer::Number
 end
 
-Base.show(io::IO, q::Question) = print(io, q.text, " = ")
+Base.show(io::IO, q::Question) = print(io, expr_to_unicode(q.expr), " = ")
 
-function practice(factors, n=10; minfactor=1, maxfactor=12,show_answers=false, bank_threshold=5)
-    println("Generating $n $minfactor:$maxfactor times-table and division questions; factors $(join(factors, ", ")).\n")
+function generate_question_set(op::Symbol, a, b, inverseoperations::Bool)
+    result = eval(Expr(:call, op, a, b))
     
-    # ALL times table combinations
-    combo_pool = [(f, c) for f in factors for c in minfactor:maxfactor] |> shuffle
+    # Primary question
+    questions = [Question(expr=Expr(:call, op, a, b), answer=result)]
+    # commutative pair
+    op in (:+, :*) && push!(questions, Question(expr=Expr(:call, op, b, a), answer=result))
+    # inverse operation
+    if inverseoperations
+        inv_op = INVERSE_OPS[op]
+        append!(questions, Question(expr=Expr(:call, inv_op, result, a), answer=b))
+    end
+    return questions
+end
+
+function practice(factors, n=10; op::Symbol=:*, minval=1, maxval=12, show_answers=false, inverseoperations=true, bank_threshold=5)
+    println("Generating $n $(get(UNICODE_OPS, op, string(op))) questions; factors $(join(factors, ", ")), range $minval:$maxval. Inverse operations: $inverseoperations.\n")
     
-    question_bank = Question[]
-    output_questions = Question[]
+    # All value×range combinations, shuffled for randomness
+    combo_pool = [(f, c) for f in factors for c in minval:maxval] |> shuffle
+    question_bank, output_questions = Question[], Question[]
     
     for _ in 1:n
-        # Refill bank if below threshold
+        # Refill bank if below threshold (sometimes overfill to reduce correlation)
         if length(question_bank) < bank_threshold
-            refill_size = rand(bank_threshold:bank_threshold+6) # sometimes overfill bank, reducing correlation in questons
-
+            refill_size = rand(bank_threshold:bank_threshold+6)
             while length(question_bank) < refill_size 
-                if isempty(combo_pool)# if no questions left... we've finished all possibilities, so let's start again
-                    combo_pool = [(f, c) for f in factors for c in 1:12] |> shuffle
+                if isempty(combo_pool) # once we've asked all questions... start again! 
+                    combo_pool = [(f, c) for f in factors for c in minval:maxval] |> shuffle
                 end
-
-                # factor (the '2 times table'), cofactor (1:12)
-                f, c = pop!(combo_pool) 
-                result = f * c
-                
-                # Compose 3 questions: both commutative multiplications & one division
-                push!(question_bank, Question(text="$f × $c", answer=result))
-                push!(question_bank, Question(text="$c × $f", answer=result))
-                push!(question_bank, Question(text="$result ÷ $f", answer=c))
+                v, c = pop!(combo_pool)
+                append!(question_bank, generate_question_set(op, v, c, inverseoperations))
             end
-
-            shuffle!(question_bank) # randomise order, for popping
+            shuffle!(question_bank)
         end
         
-        # Pop random question from bank
-        if !isempty(question_bank)
-            push!(output_questions, pop!(question_bank))
-            # FIXME: doesn't currently check for duplication
-       end
+        !isempty(question_bank) && push!(output_questions, pop!(question_bank))
     end
     
-    # Print questions to stdout
-    if show_answers # I don't actually ever use this anymore... delete to simplify, or keep for a more complex future?
-        for (i, q) in enumerate(output_questions)
-            println("Q$i: $q")
-        end
+    # Print questions (optionally with separated answers)
+    if show_answers
+        foreach(((i, q),) -> println("Q$i: $q"), enumerate(output_questions))
         println()
-        for (i, q) in enumerate(output_questions)
-            println("A$i: $(q.answer)")
-        end
+        foreach(((i, q),) -> println("A$i: $(q.answer)"), enumerate(output_questions))
     else 
-        for q in output_questions
-            println(q)
-        end
+        foreach(println, output_questions)
     end
 end
 
-# Example usage
 function main()
-    practice([2,5,10], 400)
-#    practice([3, 4], 6)
-#    practice([7, 8, 9], 8)
+#    practice([2, 5, 10], 20; op=:*, minval=1, maxval=12)              # Times tables with division
+    practice(1:5, 100; op=:+, minval=0, maxval=5, inverseoperations=false)   # Number bonds (addition/subtraction)
+    # practice([3, 4, 7], 30; op=:*, minval=1, maxval=12)             # More difficult times tables
+    # practice([2, 5, 10], 20; op=:*, inverseoperations=false)        # Multiplication only (no division)
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
