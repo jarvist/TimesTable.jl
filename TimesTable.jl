@@ -72,12 +72,14 @@ function practice(factors, n=10; op::Symbol=:*, minval=1, maxval=12, fill_in_the
 end
 
 function main()
-    practice([10], 120; op=:*, minval=1, maxval=12, fill_in_the_blank=false)              
-    practice([2], 120; op=:*, minval=1, maxval=12, fill_in_the_blank=false)              
-    practice([5], 120; op=:*, minval=1, maxval=12, fill_in_the_blank=false)              
-    practice([2,5,10], 240; op=:*, minval=1, maxval=12, fill_in_the_blank=false)
-    practice([2,5,10], 240; op=:*, minval=1, maxval=12, fill_in_the_blank=true)
+#    practice([10], 120; op=:*, minval=1, maxval=12, fill_in_the_blank=false)              
+#    practice([2], 120; op=:*, minval=1, maxval=12, fill_in_the_blank=false)              
+#    practice([5], 120; op=:*, minval=1, maxval=12, fill_in_the_blank=false)              
+#    practice([2,5,10], 240; op=:*, minval=1, maxval=12, fill_in_the_blank=false)
+#    practice([2,5,10], 240; op=:*, minval=1, maxval=12, fill_in_the_blank=true)
 
+# Reception, addition and subtraction below ten
+    practice([1,2,3,4,5],120, op=:+, minval=1, maxval=5, fill_in_the_blank=false)
 
     # Times tables with division
 #    practice(1:5, 100; op=:+, minval=0, maxval=5, inverseoperations=false, fill_in_the_blank=true)   # Number bonds (addition/subtraction)
