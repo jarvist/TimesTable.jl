@@ -72,9 +72,16 @@ function practice(factors, n=10; op::Symbol=:*, minval=1, maxval=12, fill_in_the
 end
 
 function main()
-#    practice([2, 5, 10], 20; op=:*, minval=1, maxval=12)              # Times tables with division
+    practice([10], 120; op=:*, minval=1, maxval=12, fill_in_the_blank=false)              
+    practice([2], 120; op=:*, minval=1, maxval=12, fill_in_the_blank=false)              
+    practice([5], 120; op=:*, minval=1, maxval=12, fill_in_the_blank=false)              
+    practice([2,5,10], 240; op=:*, minval=1, maxval=12, fill_in_the_blank=false)
+    practice([2,5,10], 240; op=:*, minval=1, maxval=12, fill_in_the_blank=true)
+
+
+    # Times tables with division
 #    practice(1:5, 100; op=:+, minval=0, maxval=5, inverseoperations=false, fill_in_the_blank=true)   # Number bonds (addition/subtraction)
-    practice(1:12, 24; op=:*, inverseoperations=true, fill_in_the_blank=true)
+#    practice(1:12, 24; op=:*, inverseoperations=true, fill_in_the_blank=true)
 # 12 questions on an A4 sheet on Google Docs, Roboto 34, 1.5 line spacing
 end
 
